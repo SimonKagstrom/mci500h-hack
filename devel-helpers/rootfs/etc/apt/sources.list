@@ -1,0 +1,2 @@
+deb http://archive.debian.org/debian etch main
+deb-src http://archive.debian.org/debian etch main
