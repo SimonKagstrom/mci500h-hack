@@ -11,6 +11,7 @@ bash						install
 binutils					install
 bsdmainutils					install
 bsdutils					install
+busybox-static					install
 coreutils					install
 cpio						install
 cpp						install
