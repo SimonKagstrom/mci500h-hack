@@ -1,0 +1,21 @@
+This is a development environment and replacement "ROM" for the
+Philips MCI500h micro stereo.
+
+== Prerequsites ==
+You'll need to install at least these packages (in Debian/Ubuntu,
+similar for other distributions):
+
+* debootstrap
+* qemu-kvm-extras-static
+* git
+
+== Setting up the build environment ==
+To setup the build environment, run
+
+  ./setup-build-env.sh
+
+as root. Follow the instructions to chroot into the development
+environment.
+
+== Building the distribution ==
+TBD
