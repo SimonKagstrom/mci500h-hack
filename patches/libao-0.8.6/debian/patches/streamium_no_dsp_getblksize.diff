@@ -1,0 +1,24 @@
+Only in libao-0.8.6/debian/patches: streamium_no_dsp_getblksize.diff
+diff -ru libao-0.8.6-orig/src/plugins/oss/ao_oss.c libao-0.8.6/src/plugins/oss/ao_oss.c
+--- libao-0.8.6-orig/src/plugins/oss/ao_oss.c	2011-03-13 08:37:52.000000000 +0000
++++ libao-0.8.6/src/plugins/oss/ao_oss.c	2011-03-13 08:40:13.000000000 +0000
+@@ -272,14 +272,9 @@
+ 
+ 	/* this calculates and sets the fragment size */
+ 	internal->buf_size = -1;
+-	if ((ioctl(internal->fd,SNDCTL_DSP_GETBLKSIZE,
+-				&(internal->buf_size)) < 0) ||
+-			internal->buf_size<=0 )
+-	{
+-		fprintf(stderr, "libao - OSS cannot get buffer size for "
+-				" device\n");
+-		goto ERR;
+-	}
++        /* Hardcode buf size for the Philips streamiums, which
++        doesnt support SNDCTL_DSP_GETBLKSIZE */
++        internal->buf_size = 72 * 1024;
+ 
+ 	return 1; /* Open successful */
+ 
+Only in libao-0.8.6/src/plugins/oss: ao_oss.c.orig
+Only in libao-0.8.6/src/plugins/oss: ao_oss.c~
