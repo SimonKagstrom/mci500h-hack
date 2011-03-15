@@ -25,3 +25,11 @@ tar -C $dist_rootfs/dev/ --mtime=2011-03-10 -xzf devel-helpers/dev.tar.gz
 
 # Create a tarball
 tar -czf dist.tar.gz $dist_rootfs/
+
+echo "Done. Now copy dist.tar.gz and $dist_rootfs/bin/busybox to the"
+echo "board, and unpack with /path/to/busybox tar -xzf dist.tar.gz somewhere under"
+echo "/mnt/hda/."
+echo
+echo "Then chroot into the new filesystem with"
+echo "  /path/to/busybox chroot ."
+echo "in the path where you unpacked dist.tar.gz"
