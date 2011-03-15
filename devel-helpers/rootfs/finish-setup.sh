@@ -7,4 +7,5 @@ dpkg --set-selections < /debian-pkgs
 
 apt-get -y dselect-upgrade
 apt-get clean
-rm -f finish-setup.sh debian-pkgs
+dpkg -i local-packages/*.deb
+rm -rf finish-setup.sh debian-pkgs local-packages
