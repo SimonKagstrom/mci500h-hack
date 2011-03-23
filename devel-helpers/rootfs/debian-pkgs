@@ -9,6 +9,7 @@ base-files					install
 base-passwd					install
 bash						install
 binutils					install
+boa						install
 bsdmainutils					install
 bsdutils					install
 build-essential					install
@@ -39,6 +40,7 @@ esound-common					install
 ffmpeg						deinstall
 file						install
 findutils					install
+flac						install
 g++						install
 g++-4.1						install
 gawk						install
@@ -126,6 +128,7 @@ libncursesw5					install
 libnewt0.52					install
 libogg-dev					install
 libogg0						install
+liboggflac3					install
 libopencdk8					install
 libpam-modules					install
 libpam-runtime					install
