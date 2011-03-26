@@ -8,4 +8,7 @@ dpkg --set-selections < /debian-pkgs
 apt-get -y dselect-upgrade
 apt-get clean
 dpkg -i local-packages/*.deb
-rm -rf finish-setup.sh debian-pkgs local-packages
+
+cp -rap update-rootfs/* .
+
+rm -rf finish-setup.sh debian-pkgs local-packages update-rootfs
