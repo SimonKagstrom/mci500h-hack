@@ -19,7 +19,8 @@ fi
 
 install -d $dist_rootfs
 cp -rap $chroot_rootfs/* $dist_rootfs/
-rm -rf $dist_rootfs/root/* $dist_rootfs/usr/games $dist_rootfs/usr/share/doc $dist_rootfs/usr/share/man $dist_rootfs/usr/include $dist_rootfs/usr/local/include $dist_rootfs/usr/local/share $dist_rootfs/usr/local/man $dist_rootfs/usr/bin/qemu-arm-static $dist_rootfs/var/cache/apt/archives/ $dist_rootfs/var/cache/apt/archives/ $dist_rootfs/var/lib/apt/lists/
+rm -rf $dist_rootfs/root/* $dist_rootfs/usr/games $dist_rootfs/usr/share/doc $dist_rootfs/usr/share/man $dist_rootfs/usr/include $dist_rootfs/usr/local/include $dist_rootfs/usr/local/share $dist_rootfs/usr/local/man $dist_rootfs/usr/bin/qemu-arm-static $dist_rootfs/var/cache/apt/archives/ $dist_rootfs/var/cache/apt/archives/ $dist_rootfs/var/lib/apt/lists/ $dist_rootfs/usr/share/locale/ $dist_rootfs/usr/share/zoneinfo
+
 
 tar -C $dist_rootfs/dev/ --mtime=2011-03-10 -xzf devel-helpers/dev.tar.gz
 
