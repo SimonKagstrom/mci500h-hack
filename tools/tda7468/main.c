@@ -5,8 +5,10 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/ioctl.h>
 #include <fcntl.h>
 
+#include <linux/i2c.h>
 #include <linux/i2c-dev.h>
 
 #define panic(fmt...) do { \
@@ -29,7 +31,7 @@ enum tda7468d_functions {
 union tda7468d_input_and_mic
 {
 	struct {
-		uint8_t input    : 3;
+		uint8_t input    : 2;
 		uint8_t mute_on  : 1;
 		uint8_t mic_gain : 2;
 		uint8_t mic_off  : 1;
@@ -172,8 +174,8 @@ static void do_volume(int fd, int is_left, int n_opts, const char **options)
 	if (is_left)
 		func = FUNC_VOLUME_LEFT;
 
-	if (volume < 0 || volume > 56)
-		panic("Volume out of bounds: %ld. Should be 0..87\n",
+	if (volume < 45 || volume > 55)
+		panic("Volume out of bounds: %ld. Should be 45..55\n",
 				volume);
 
 	vol_56 = volume % 56;
@@ -233,7 +235,8 @@ static void usage(void)
 	printf("Usage: tda7468-tool <command> [options]\n\n"
 			"Where <command> and [options] can be:\n\n"
 			"   input [in1|in2|in3|in4] [mute|unmute] [mic_0|mic_6|mic_10|mic_14]\n"
-			"   vol   <0-87>:  Set the volume in decibel\n"
+			"   volume-left   <0-87>:  Set the left volume in decibel (negated)\n"
+			"   volume-right  <0-87>:  Set the right volume in decibel (negated)\n"
 			"   ... More to come\n"
 			);
 	exit(1);
@@ -246,7 +249,7 @@ int main(int argc, const char *argv[])
 	int n_opts;
 	int fd;
 
-	if (argc < 4)
+	if (argc < 3)
 		usage();
 	command = argv[1];
 	options = &argv[2];
