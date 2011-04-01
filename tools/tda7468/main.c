@@ -92,9 +92,22 @@ static void tda7468d_write(int fd,
 	buf[0] = func;
 	buf[1] = val;
 
+	printf("Writing f:%02x  v:%02x\n", buf[0], buf[1]);
 	r = write(fd, buf, sizeof(buf));
 	if (r < 0)
 		panic("write error: %d\n", r);
+}
+
+static long to_val(const char *str)
+{
+	char *endp;
+	long val;
+
+	val = strtol(str, &endp, 0);
+	if (endp == str)
+		panic("Can't convert string %s to number\n", str);
+
+	return val;
 }
 
 static void do_input(int fd, int n_opts, const char **options)
@@ -150,6 +163,28 @@ static void do_gain(int fd, int n_opts, const char **options)
 
 static void do_volume(int fd, int is_left, int n_opts, const char **options)
 {
+	enum tda7468d_functions func = FUNC_VOLUME_RIGHT;
+	long volume = to_val(options[0]);
+	long vol_56, vol_above_56;
+	union tda7468d_volume v;
+
+	v.b = 0;
+	if (is_left)
+		func = FUNC_VOLUME_LEFT;
+
+	if (volume < 0 || volume > 56)
+		panic("Volume out of bounds: %ld. Should be 0..87\n",
+				volume);
+
+	vol_56 = volume % 56;
+	vol_above_56 = volume - vol_56;
+	if (vol_above_56 < 0)
+		vol_above_56 = 0;
+
+	v.bits.steps_1db = vol_56 % 8;
+	v.bits.steps_8db = vol_56 / 8;
+
+	tda7468d_write(fd, func, v.b);
 }
 
 static void do_output(int fd, int n_opts, const char **options)
@@ -196,8 +231,10 @@ static void close_i2c(int fd)
 static void usage(void)
 {
 	printf("Usage: tda7468-tool <command> [options]\n\n"
-			"Where <command> and [options] can be\n\n"
-			""
+			"Where <command> and [options] can be:\n\n"
+			"   input [in1|in2|in3|in4] [mute|unmute] [mic_0|mic_6|mic_10|mic_14]\n"
+			"   vol   <0-87>:  Set the volume in decibel\n"
+			"   ... More to come\n"
 			);
 	exit(1);
 }
