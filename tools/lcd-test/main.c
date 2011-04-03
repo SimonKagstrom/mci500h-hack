@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/ioctl.h>
 
 /* From the Linux driver */
@@ -49,7 +50,8 @@ static void *screen;
 
 static void usage(void)
 {
-	printf("Usage: lcd-test <dev> <x> <y> <w> <h> <val-to-write>\n");
+	printf("Usage: lcd-test <dev> set <x> <y> <w> <h> <val-to-write>\n");
+	printf("Or:    lcd-test <dev> backlight <on/off>\n");
 
 	exit(1);
 }
@@ -117,18 +119,24 @@ static void do_ioctl(int fd, int what, void *arg)
 	}
 }
 
-int main(int argc, const char *argv[])
+static void do_backlight(int fd, const char *on_off)
+{
+	int pin = IOCTRL_SET_LIGHTPIN_LOW;
+
+	if (strcmp(on_off, "off") == 0)
+		pin = IOCTRL_SET_LIGHTPIN_HIGH;
+
+	do_ioctl(fd, pin, NULL);
+}
+
+static void do_set(int fd, int argc, const char *argv[])
 {
 	int x, y, w, h;
 	int bpp;
-	int fd;
 
-	if (argc != 7)
+	if (argc != 6)
 		usage();
 
-	fd = open(argv[1], O_RDWR);
-	if (fd < 0)
-		usage();
 	screen = mmap(NULL, mem_size, PROT_WRITE, MAP_SHARED, fd, 0);
 	if (screen == MAP_FAILED)
 	{
@@ -158,12 +166,12 @@ int main(int argc, const char *argv[])
 	do_ioctl(fd, IOCTRL_DISPLAY_ENABLE, NULL);
 	do_ioctl(fd, IOCTRL_CLEAR_LCD, NULL);
 
-	x = strtoul(argv[2], NULL, 0);
-	y = strtoul(argv[3], NULL, 0);
-	w = strtoul(argv[4], NULL, 0);
-	h = strtoul(argv[5], NULL, 0);
+	x = strtoul(argv[1], NULL, 0);
+	y = strtoul(argv[2], NULL, 0);
+	w = strtoul(argv[3], NULL, 0);
+	h = strtoul(argv[4], NULL, 0);
 
-	val = strtoul(argv[6], NULL, 0);
+	val = strtoul(argv[5], NULL, 0);
 
 	if ( y * screen_w + x * bytes_per_pixel > mem_size )
 	{
@@ -195,6 +203,25 @@ int main(int argc, const char *argv[])
 
 	msync(screen, mem_size, MS_SYNC);
 	munmap(screen, mem_size);
+}
+
+
+int main(int argc, const char *argv[])
+{
+	int fd;
+
+	if (argc < 3)
+		usage();
+
+	fd = open(argv[1], O_RDWR);
+	if (fd < 0)
+		usage();
+
+	if (strcmp(argv[2], "set") == 0)
+		do_set(fd, argc - 1 , &argv[1]);
+	else if (strcmp(argv[2], "backlight") == 0)
+		do_backlight(fd, argv[3]);
+
 	close(fd);
 
 	return 0;
