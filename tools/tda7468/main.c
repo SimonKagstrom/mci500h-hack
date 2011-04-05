@@ -191,7 +191,15 @@ static void do_volume(int fd, int is_left, int n_opts, const char **options)
 
 static void do_output(int fd, int n_opts, const char **options)
 {
-	panic("NYI\n");
+	union tda7468d_output v;
+
+	v.b = 0;
+	v.bits.mute = 0;
+
+	if (strcmp(options[0], "mute") == 0)
+		v.bits.mute = 1;
+
+	tda7468d_write(fd, FUNC_OUTPUT, v.b);
 }
 
 static void do_surround(int fd, int n_opts, const char **options)
