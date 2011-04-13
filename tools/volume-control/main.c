@@ -56,15 +56,33 @@ static void unmute(int fd)
 	ioctl_check(fd, SOUND_MIXER_PRIVATE2, &v);
 }
 
+static void saO3_dac(int fd)
+{
+	int v = 1;
+
+	printf("Connecting SAO3 to DAC\n");
+	ioctl_check(fd, SOUND_MIXER_PRIVATE3, &v);
+}
+
+static void saO3_epics(int fd)
+{
+	int v = 0;
+
+	printf("Connecting SAO3 to EPICS\n");
+	ioctl_check(fd, SOUND_MIXER_PRIVATE3, &v);
+}
+
 
 static void usage(void)
 {
 	printf("Usage: audio-test <command> [options]\n\n"
 			"Where <command> can be\n"
-			"  status    Display status\n"
-			"  mute      Mute the sound\n"
-			"  unmute    Unmute the sound\n"
-			"  vol <vol> Set the volume (e.g., 0x1020: right 0x10, left 0x20)\n"
+			"  status     Display status\n"
+			"  mute       Mute the sound\n"
+			"  unmute     Unmute the sound\n"
+			"  saO3-dac   Connect SAO3 to DAC\n"
+			"  saO3-epics Connect SAO3 to EPICS\n"
+			"  vol <vol>  Set the volume (e.g., 0x1020: right 0x10, left 0x20)\n"
 			);
 }
 
@@ -88,6 +106,10 @@ int main(int argc, const char *argv[])
 		mute(fd);
 	if (strcmp(command, "unmute") == 0)
 		unmute(fd);
+	if (strcmp(command, "saO3-dac") == 0)
+		saO3_dac(fd);
+	if (strcmp(command, "saO3-epics") == 0)
+		saO3_epics(fd);
 	if (strcmp(command, "vol") == 0) {
 		const char *volstr = argv[2];
 		char *endp;
