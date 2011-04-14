@@ -150,6 +150,7 @@ static void usage(void)
 			"  stats      Print stats\n"
 			"  vol <vol>  Set the volume (e.g., 0x1020: right 0x10, left 0x20)\n"
 			);
+	exit(1);
 }
 
 int main(int argc, const char *argv[])
