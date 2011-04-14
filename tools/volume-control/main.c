@@ -10,6 +10,23 @@
 #include <stdio.h>
 #include <linux/soundcard.h>
 
+/* From audio.h in the kernel */
+struct pnx0106_audio_stats
+{
+    int norm_fill;              /* normal DMA fill */
+    int norm_underrun_empty;    /* Underrun w/no data */
+    int norm_underrun_partial;  /* Underrun w/data */
+    int norm_stalled;    	/* Underrun after underrun */
+    int sync_late_norm;         /* normal late synchronization */
+    int sync_late_nodata;       /* late sync w/no data */
+    int sync_late_underrun;     /* late sync w/partial data */
+    int sync_wait;              /* normal sync */
+    int sync_underrun;          /* sync w/no data */
+    int sync_fill;              /* sync w/full data */
+};
+
+#define PNX0106_AUDIO_STATS _IOW ('A', 1, struct pnx0106_audio_stats)
+
 static void ioctl_check(int fd, int d, void *p)
 {
 	int res = ioctl(fd, d, p);
@@ -72,6 +89,35 @@ static void saO3_epics(int fd)
 	ioctl_check(fd, SOUND_MIXER_PRIVATE3, &v);
 }
 
+static void audio_stats(int fd)
+{
+	struct pnx0106_audio_stats stats;
+
+	ioctl_check(fd, PNX0106_AUDIO_STATS, &stats);
+
+	printf( "Stats:\n"
+			"norm-fill:             %x\n"
+			"norm-underrun-empty:   %x\n"
+			"norm-underrun-partial: %x\n"
+			"norm-stalled:          %x\n"
+			"sync-late-norm:        %x\n"
+			"sync-late-nodata:      %x\n"
+			"sync-late-underrun:    %x\n"
+			"sync-wait:             %x\n"
+			"sync-underrun:         %x\n"
+			"sync-fill:             %x\n",
+			stats.norm_fill,
+			stats.norm_underrun_empty,
+			stats.norm_underrun_partial,
+			stats.norm_stalled,
+			stats.sync_late_norm,
+			stats.sync_late_nodata,
+			stats.sync_late_underrun,
+			stats.sync_wait,
+			stats.sync_underrun,
+			stats.sync_fill);
+}
+
 static void sync_playback(int fd, unsigned long tsc_in)
 {
 	uint64_t v = tsc_in;
@@ -101,6 +147,7 @@ static void usage(void)
 			"  saO3-epics Connect SAO3 to EPICS\n"
 			"  sync <tsc> Setup sync playback\n"
 			"  bind <val> Bind channel\n"
+			"  stats      Print stats\n"
 			"  vol <vol>  Set the volume (e.g., 0x1020: right 0x10, left 0x20)\n"
 			);
 }
@@ -135,6 +182,8 @@ int main(int argc, const char *argv[])
 		saO3_dac(mixer_fd);
 	if (strcmp(command, "saO3-epics") == 0)
 		saO3_epics(mixer_fd);
+	if (strcmp(command, "stats") == 0)
+		audio_stats(dsp_fd);
 	if (strcmp(command, "sync") == 0) {
 		const char *volstr = argv[2];
 		char *endp;
