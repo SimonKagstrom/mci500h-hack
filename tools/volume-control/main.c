@@ -126,12 +126,15 @@ static void sync_playback(int fd, unsigned long tsc_in)
 	ioctl_check(fd, SNDCTL_DSP_POST, &v);
 }
 
-static void bind_channel(int fd, unsigned long tsc_in)
+static void bind_channel(int fd, unsigned long val_in)
 {
-	uint64_t v = tsc_in;
+	uint32_t v = val_in;
 
-	printf("Bind channel to %llux\n", v);
+	printf("Bind channel to %x\n", v);
 	ioctl_check(fd, SNDCTL_DSP_BIND_CHANNEL, &v);
+
+	if (val_in == 0)
+		printf("Ret: %x\n", v);
 }
 
 
@@ -198,7 +201,7 @@ int main(int argc, const char *argv[])
 
 		sync_playback(dsp_fd, tsc);
 	}
-	if (strcmp(command, "bind-channel") == 0) {
+	if (strcmp(command, "bind") == 0) {
 		const char *valstr = argv[2];
 		char *endp;
 		unsigned long val;
