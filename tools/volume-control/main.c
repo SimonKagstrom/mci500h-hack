@@ -80,6 +80,15 @@ static void sync_playback(int fd, unsigned long tsc_in)
 	ioctl_check(fd, SNDCTL_DSP_POST, &v);
 }
 
+static void bind_channel(int fd, unsigned long tsc_in)
+{
+	uint64_t v = tsc_in;
+
+	printf("Bind channel to %llux\n", v);
+	ioctl_check(fd, SNDCTL_DSP_BIND_CHANNEL, &v);
+}
+
+
 
 static void usage(void)
 {
@@ -91,6 +100,7 @@ static void usage(void)
 			"  saO3-dac   Connect SAO3 to DAC\n"
 			"  saO3-epics Connect SAO3 to EPICS\n"
 			"  sync <tsc> Setup sync playback\n"
+			"  bind <val> Bind channel\n"
 			"  vol <vol>  Set the volume (e.g., 0x1020: right 0x10, left 0x20)\n"
 			);
 }
@@ -137,6 +147,19 @@ int main(int argc, const char *argv[])
 			usage();
 
 		sync_playback(dsp_fd, tsc);
+	}
+	if (strcmp(command, "bind-channel") == 0) {
+		const char *valstr = argv[2];
+		char *endp;
+		unsigned long val;
+
+		if (argc < 3)
+			usage();
+		val = strtoul(valstr, &endp, 0);
+		if (endp == valstr)
+			usage();
+
+		bind_channel(dsp_fd, val);
 	}
 	if (strcmp(command, "vol") == 0) {
 		const char *volstr = argv[2];
