@@ -72,6 +72,14 @@ static void saO3_epics(int fd)
 	ioctl_check(fd, SOUND_MIXER_PRIVATE3, &v);
 }
 
+static void sync_playback(int fd, unsigned long tsc_in)
+{
+	uint64_t v = tsc_in;
+
+	printf("Setting up sync playback to %llux\n", v);
+	ioctl_check(fd, SNDCTL_DSP_POST, &v);
+}
+
 
 static void usage(void)
 {
@@ -82,6 +90,7 @@ static void usage(void)
 			"  unmute     Unmute the sound\n"
 			"  saO3-dac   Connect SAO3 to DAC\n"
 			"  saO3-epics Connect SAO3 to EPICS\n"
+			"  sync <tsc> Setup sync playback\n"
 			"  vol <vol>  Set the volume (e.g., 0x1020: right 0x10, left 0x20)\n"
 			);
 }
@@ -89,27 +98,46 @@ static void usage(void)
 int main(int argc, const char *argv[])
 {
 	const char *command = argv[1];
-	int fd;
+	int mixer_fd, dsp_fd;
 
 	if (argc < 2)
 		usage();
 
-	fd = open("/dev/mixer", O_RDONLY);
-	if (fd < 0) {
+	mixer_fd = open("/dev/mixer", O_RDONLY);
+	if (mixer_fd < 0) {
 		fprintf(stderr, "Can't open mixer device\n");
 		return -1;
 	}
 
+	dsp_fd = open("/dev/dsp", O_RDONLY);
+	if (dsp_fd < 0) {
+		fprintf(stderr, "Can't open dsp device\n");
+		return -1;
+	}
+
 	if (strcmp(command, "status") == 0)
-		status(fd);
+		status(mixer_fd);
 	if (strcmp(command, "mute") == 0)
-		mute(fd);
+		mute(mixer_fd);
 	if (strcmp(command, "unmute") == 0)
-		unmute(fd);
+		unmute(mixer_fd);
 	if (strcmp(command, "saO3-dac") == 0)
-		saO3_dac(fd);
+		saO3_dac(mixer_fd);
 	if (strcmp(command, "saO3-epics") == 0)
-		saO3_epics(fd);
+		saO3_epics(mixer_fd);
+	if (strcmp(command, "sync") == 0) {
+		const char *volstr = argv[2];
+		char *endp;
+		unsigned long tsc;
+
+		if (argc < 3)
+			usage();
+		tsc = strtoul(volstr, &endp, 0);
+		if (endp == volstr)
+			usage();
+
+		sync_playback(dsp_fd, tsc);
+	}
 	if (strcmp(command, "vol") == 0) {
 		const char *volstr = argv[2];
 		char *endp;
@@ -121,10 +149,11 @@ int main(int argc, const char *argv[])
 		if (endp == volstr)
 			usage();
 
-		setvol(fd, vol);
+		setvol(mixer_fd, vol);
 	}
 
-	close(fd);
+	close(dsp_fd);
+	close(mixer_fd);
 
 	return 0;
 }
