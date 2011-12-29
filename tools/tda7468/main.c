@@ -85,6 +85,27 @@ union tda7468d_bass_alc {
 	uint8_t b;
 };
 
+static uint8_t tda7468d_read(int fd,
+		enum tda7468d_functions func)
+{
+	char buf[1];
+	int r;
+
+	buf[0] = func;
+
+	printf("Writing f:%02x\n", buf[0]);
+	r = write(fd, buf, sizeof(buf));
+	if (r < 0)
+		panic("write error: %d\n", r);
+
+	r = read(fd, buf, sizeof(buf));
+	if (r < 0)
+		panic("read error: %d\n", r);
+
+	return buf[0];
+}
+
+
 static void tda7468d_write(int fd,
 		enum tda7468d_functions func, uint8_t val)
 {
@@ -217,6 +238,28 @@ static void do_bass_alc(int fd, int n_opts, const char **options)
 	panic("NYI\n");
 }
 
+static void do_dump(int fd, int n_opts, const char **options)
+{
+	uint8_t data;
+
+	data = tda7468d_read(fd, FUNC_INPUT_SELECT_AND_MIC);
+	printf("input select/mic:  0x%02x\n", data);
+	data = tda7468d_read(fd, FUNC_INPUT_GAIN);
+	printf("input gain:        0x%02x\n", data);
+	data = tda7468d_read(fd, FUNC_SURROUND);
+	printf("surround:          0x%02x\n", data);
+	data = tda7468d_read(fd, FUNC_VOLUME_LEFT);
+	printf("volume left:       0x%02x\n", data);
+	data = tda7468d_read(fd, FUNC_VOLUME_RIGHT);
+	printf("volume right:      0x%02x\n", data);
+	data = tda7468d_read(fd, FUNC_TREBLE_AND_BASS);
+	printf("treble/bass:       0x%02x\n", data);
+	data = tda7468d_read(fd, FUNC_OUTPUT);
+	printf("output:            0x%02x\n", data);
+	data = tda7468d_read(fd, FUNC_BASS_ALC);
+	printf("bass alc:          0x%02x\n", data);
+}
+
 static int open_i2c(const char *dev, int client_addr)
 {
 	int fd;
@@ -245,6 +288,7 @@ static void usage(void)
 			"   input [in1|in2|in3|in4] [mute|unmute] [mic_0|mic_6|mic_10|mic_14]\n"
 			"   volume-left   <0-87>:  Set the left volume in decibel (negated)\n"
 			"   volume-right  <0-87>:  Set the right volume in decibel (negated)\n"
+			"   dump: Dump all registers\n"
 			"   ... More to come\n"
 			);
 	exit(1);
@@ -283,6 +327,8 @@ int main(int argc, const char *argv[])
 		do_output(fd, n_opts, options);
 	else if (strcmp(command, "bass-alc") == 0)
 		do_bass_alc(fd, n_opts, options);
+	else if (strcmp(command, "dump") == 0)
+		do_dump(fd, n_opts, options);
 
 	close_i2c(fd);
 
