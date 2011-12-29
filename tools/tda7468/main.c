@@ -85,6 +85,8 @@ union tda7468d_bass_alc {
 	uint8_t b;
 };
 
+static void usage(void);
+
 static uint8_t tda7468d_read(int fd,
 		enum tda7468d_functions func)
 {
@@ -107,7 +109,7 @@ static uint8_t tda7468d_read(int fd,
 
 
 static void tda7468d_write(int fd,
-		enum tda7468d_functions func, uint8_t val)
+		uint8_t func, uint8_t val)
 {
 	char buf[2];
 	int r;
@@ -266,6 +268,23 @@ static void do_dump(int fd, int n_opts, const char **options)
 	printf("bass alc:          0x%02x\n", data);
 }
 
+static void do_write(int fd, int n_opts, const char **options)
+{
+	uint8_t func, data;
+	char *endp;
+
+	if (n_opts < 2)
+		usage();
+
+	func = strtoul(options[0], &endp, 0);
+	data = strtoul(options[1], &endp, 0);
+
+	if (func == FUNC_VOLUME_LEFT || func == FUNC_VOLUME_RIGHT)
+		panic("Will not write the volume!\n");
+
+	tda7468d_write(fd, func, data);
+}
+
 static int open_i2c(const char *dev, int client_addr)
 {
 	int fd;
@@ -295,6 +314,7 @@ static void usage(void)
 			"   volume-left   <0-87>:  Set the left volume in decibel (negated)\n"
 			"   volume-right  <0-87>:  Set the right volume in decibel (negated)\n"
 			"   dump: Dump all registers\n"
+			"   write <reg> <value>: Write to some register\n"
 			"   ... More to come\n"
 			);
 	exit(1);
@@ -335,6 +355,8 @@ int main(int argc, const char *argv[])
 		do_bass_alc(fd, n_opts, options);
 	else if (strcmp(command, "dump") == 0)
 		do_dump(fd, n_opts, options);
+	else if (strcmp(command, "write") == 0)
+		do_write(fd, n_opts, options);
 
 	close_i2c(fd);
 
