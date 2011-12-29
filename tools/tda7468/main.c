@@ -174,6 +174,12 @@ static void do_input(int fd, int n_opts, const char **options)
 			v.bits.mic_off = 0;
 			v.bits.mic_gain = 0;
 		}
+		else if (strcmp(p, "on") == 0) {
+			v.bits.mic_off = 0;
+		}
+		else if (strcmp(p, "off") == 0) {
+			v.bits.mic_off = 1;
+		}
 	}
 
 	tda7468d_write(fd, FUNC_INPUT_SELECT_AND_MIC, v.b);
@@ -285,7 +291,7 @@ static void usage(void)
 {
 	printf("Usage: tda7468-tool <command> [options]\n\n"
 			"Where <command> and [options] can be:\n\n"
-			"   input [in1|in2|in3|in4] [mute|unmute] [mic_0|mic_6|mic_10|mic_14]\n"
+			"   input [in1|in2|in3|in4] [mute|unmute] [mic_0|mic_6|mic_10|mic_14|on|off]\n"
 			"   volume-left   <0-87>:  Set the left volume in decibel (negated)\n"
 			"   volume-right  <0-87>:  Set the right volume in decibel (negated)\n"
 			"   dump: Dump all registers\n"
