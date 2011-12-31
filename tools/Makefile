@@ -2,7 +2,8 @@ TGTS=buttons/buttons \
 	lcd-test/lcd-test \
 	remote-control/remote-control \
 	volume-control/volume-control \
-	tda7468/tda7468
+	tda7468/tda7468 \
+	i2c-read/i2c-read
 
 all: $(TGTS)
 
@@ -19,6 +20,9 @@ volume-control/volume-control: volume-control/main.c
 	gcc -Wall -o $@ $<
 
 tda7468/tda7468: tda7468/main.c
+	gcc -Wall -o $@ $<
+
+i2c-read/i2c-read: i2c-read/main.c
 	gcc -Wall -o $@ $<
 
 clean:
